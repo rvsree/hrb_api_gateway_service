@@ -2,4 +2,4 @@ fastapi
 uvicorn[standard]
 httpx
 pydantic
-git+https://github.com/rvsree/hrb-common-libs.git@v0.2.0#egg=hrb-common-libs[observability,db,cache,auth]
+git+https://github.com/rvsree/hrb-common-libs.git@v0.3.0#egg=hrb-common-libs[observability,db,cache,auth]
