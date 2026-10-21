@@ -1,4 +1,4 @@
-# hrb-api_gateway_service Roadmap
+# hrb_api_gateway_service Roadmap
 
 Phase-by-phase plan and history, same convention as `hrb_chatbot_v2`'s `docs/agent-reference/RAG-ROADMAP.md`.
 

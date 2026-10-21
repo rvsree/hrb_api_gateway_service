@@ -1,4 +1,4 @@
-# hrb-api_gateway_service
+# hrb_api_gateway_service
 
 The single public entry point for the HRB chatbot system - RBAC, CORS, rate-limiting, and contract validation, centralized once for every backend service it fronts.
 

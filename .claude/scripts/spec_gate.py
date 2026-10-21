@@ -1,4 +1,4 @@
-"""PreToolUse hook for hrb-api_gateway_service - blocks a Write/Edit under
+"""PreToolUse hook for hrb_api_gateway_service - blocks a Write/Edit under
 src/gateway/** unless at least one phase in ROADMAP.md has a written,
 not-yet-done spec. Same convention as hrb_chatbot_v2's own spec_gate.py.
 
