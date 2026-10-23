@@ -37,8 +37,14 @@ async def forward_request(request: Request, backend_base_url: str, client: httpx
     headers["X-Request-ID"] = request_id
     body = await request.body()
 
+    # 90s, not 30s - a real genai-rag-retrieval query against hrb_chatbot_service
+    # (decompose -> retrieve -> generate -> guardrails -> live eval judges) was
+    # directly measured taking close to 60s end to end during this service's own
+    # first real deployment smoke test (2026-10-23) - 30s was tripping this
+    # forwarder's own circuit breaker on genuinely successful, just-slow backend
+    # calls, not actual backend failures.
     owns_client = client is None
-    client = client or httpx.AsyncClient(timeout=30)
+    client = client or httpx.AsyncClient(timeout=90)
 
     try:
         try:
