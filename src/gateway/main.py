@@ -1,9 +1,12 @@
 from fastapi import Depends, FastAPI, Request
+from pydantic import ValidationError
 
-from gateway.error_codes import BACKEND_UNAVAILABLE, RATE_LIMITED
+from gateway import health_checks
+from gateway.contracts import validate_contract
+from gateway.error_codes import BACKEND_UNAVAILABLE, RATE_LIMITED, VALIDATION_ERROR
 from gateway.middleware.cors import configure_cors
 from gateway.middleware.rate_limit import RateLimitExceeded, RateLimiter, enforce_rate_limit
-from gateway.responses import json_error
+from gateway.responses import health_response, json_error
 from gateway.routing.forward import BackendUnavailableError, forward_request
 from hrb_common.observability.secrets import read_secret
 
@@ -39,11 +42,30 @@ async def ping():
     return {"status": "ok"}
 
 
+@app.get("/health")
+async def health():
+    """Phase 6 - one real, free call per backend (Redis, the forwarded service's own /ping).
+    Never raises - always returns 200 or 503 with a real body, same convention as hrb_chatbot_v2."""
+    report = await health_checks.check_all()
+    return health_response(report)
+
+
 @app.api_route("/v1/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"], dependencies=[Depends(enforce_rate_limit(_rate_limiter))])
 async def forward_to_backend(path: str, request: Request):
     """Phase 3's single-backend forwarding - see ROADMAP.md. Role-based routing
     (which roles are allowed on which forwarded path) is deferred to once the
     real multi-service route map exists (Phase 3 extended) - a generic catch-all
-    proxy has no per-path role mapping to enforce yet."""
+    proxy has no per-path role mapping to enforce yet.
+
+    Phase 4 - validate_contract() is a no-op for any path outside its own
+    3-endpoint scope (see contracts.py), so this never changes behavior for
+    the rest of this backend's surface. request.body() is read here and
+    again inside forward_request() - Starlette caches it, so this doesn't
+    double-consume the stream."""
+    try:
+        validate_contract(request.url.path, await request.body())
+    except ValidationError as error:
+        return json_error(422, str(error), code=VALIDATION_ERROR)
+
     backend_base_url = read_secret("BACKEND_SERVICE_URL", "http://127.0.0.1:8093")
     return await forward_request(request, backend_base_url)
