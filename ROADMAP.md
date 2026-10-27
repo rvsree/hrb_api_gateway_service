@@ -17,7 +17,7 @@ Phase-by-phase plan and history, same convention as `hrb_chatbot_v2`'s `docs/age
 
 ## Phases
 
-- [x] **Phase 1 (done) — CORS + rate limit.** CORS policy matching `hrb_chatbot_v2`'s current `main.py` config. Redis-backed per-`employee_id` rate limiting (prerequisite: Redis live in production). Depends on `hrb-common-libs[observability,cache]`.
+- [x] **Phase 1 (done) — CORS + rate limit.** CORS policy matching `hrb_chatbot_v2`'s current `main.py` config. Redis-backed per-`employee_id` rate limiting (prerequisite: Redis live in production). Depends on `hrb_common_libs[observability,cache]`.
   - **Spec:**
     - **Context:** first real code in this repo. Everything downstream (Phase 2's RBAC, Phase 3's forwarding) sits behind this entry layer.
     - **Source:** CORS config is a direct port of `hrb_chatbot_v2`'s `main.py` (`allow_origins=["https://hrb-chatbot-ui.rvsree.dev"]`, `allow_origin_regex=r"http://localhost:\d+"`, `allow_credentials=True`, `allow_methods=["*"]`, `allow_headers=["*"]`). Rate limiting is new code - no equivalent exists in `hrb_chatbot_v2` today (flagged in NFR-review discussion as "already broken at real scale").
@@ -40,7 +40,7 @@ Phase-by-phase plan and history, same convention as `hrb_chatbot_v2`'s `docs/age
 - [x] **Phase 3 (done, single-backend) — route-to-service forwarding.** Plain env-var URL map (`RAG_INGESTION_SERVICE_URL`, `RAG_RETRIEVAL_SERVICE_URL`, ...), same pattern as `HRB_LMS_MCP_URL`. Forwards request body/headers + adds `request_id`.
   - **Spec:**
     - **Context:** `hrb_rag_ingestion_service`/`hrb_rag_retrieval_service` don't exist yet - this phase builds generic forwarding against one configurable backend, so it can be proven against the still-undivided `hrb_chatbot_service` today (per the original cutover plan - Phase 5 points the real frontend at the Gateway, forwarding 1:1 to one backend, before any RAG split happens). The route-to-*multiple*-services map becomes real config once those services exist - the forwarding mechanism itself doesn't need to wait.
-    - **Source:** new code. `request_id` generation reuses `hrb_common.observability`'s `new_request_id()`/`set_request_id()` from Phase 1 of `hrb-common-libs`.
+    - **Source:** new code. `request_id` generation reuses `hrb_common.observability`'s `new_request_id()`/`set_request_id()` from Phase 1 of `hrb_common_libs`.
     - **Request/response contract:** forwards method/path/query/body/headers unchanged except `X-Request-ID` added; returns the backend's response unchanged (status code, body, most headers) - no reshaping, no aggregation (explicitly out of scope per the Decisions doc).
     - **API surface:** `forward_request(request: Request, backend_base_url: str) -> Response` - a generic reverse-proxy function; `BACKEND_SERVICE_URL` env var for the single-backend case this phase actually covers.
     - **Failure modes:** backend unreachable → Resiliency's `CircuitBreaker` (from `hrb_common.observability`) trips after repeated failures → `503` with `{"error", "code": "BACKEND_UNAVAILABLE"}`, not a hung connection.

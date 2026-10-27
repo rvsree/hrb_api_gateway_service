@@ -15,7 +15,7 @@ Check specifically:
 3. **No aggregation logic** - this service forwards, it doesn't combine
    multiple backends' responses (out of scope until a later phase).
 4. **Dependency hygiene** - does this diff add `llm`, `mcp`, `storage`, or
-   `web` from `hrb-common-libs`? None of those belong in this service.
+   `web` from `hrb_common_libs`? None of those belong in this service.
 5. Standard code-quality concerns: error handling, naming, test coverage.
 
 Report findings as a ranked list, most severe first. Do not edit files.
