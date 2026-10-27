@@ -38,16 +38,16 @@ Deployed to AWS App Runner (`https://necxf9n7mv.us-east-1.awsapprunner.com`), an
 
 ## 5. Correction, 2026-10-24: RBAC is not actually enforced here
 
-This README previously claimed `api/gateway/rbac.py`'s own RBAC role was "absorbed into this service" and built. **Verified directly against `main.py`, that's wrong.** The catch-all forwarding route's only dependency is the rate limiter - `rbac.py` is a real file in this repo, but it's never wired into `main.py`. The route's own comment says it plainly: *"a generic catch-all proxy has no per-path role mapping to enforce yet."* Role enforcement happens downstream, inside each backend service's own route body - not centrally, here. This is now documented accurately in the [current-state architecture diagram](../docs/architecture/diagrams/api-gateway-current-state-architecture.drawio) and in [`hrb_chatbot_service`'s own architecture.html for this service](../hrb_chatbot_service/docs/dev-reference/hrb_chatbot_v3/platform-and-admin/api-gateway-service/architecture.html).
+This README previously claimed `api/gateway/rbac.py`'s own RBAC role was "absorbed into this service" and built. **Verified directly against `main.py`, that's wrong.** The catch-all forwarding route's only dependency is the rate limiter - `rbac.py` is a real file in this repo, but it's never wired into `main.py`. The route's own comment says it plainly: *"a generic catch-all proxy has no per-path role mapping to enforce yet."* Role enforcement happens downstream, inside each backend service's own route body - not centrally, here. This is now documented accurately in the [current-state architecture diagram](../docs/architecture/diagrams/api-gateway-current-state-architecture.drawio) and in [`hrb_chatbot_service`'s own architecture.html for this service](../docs/platform-and-admin/api-gateway-service/architecture.html).
 
 ## Documentation index
 
 | Doc | What it covers |
 |---|---|
-| [Overview / Spec / Architecture / Design / Decisions](../hrb_chatbot_service/docs/dev-reference/hrb_chatbot_v3/platform-and-admin/api-gateway-service/) | The full HTML doc set for this service |
-| [Build process](../hrb_chatbot_service/docs/dev-reference/hrb_chatbot_v3/deployment-and-ops/build-and-deploy/02a-hrb-api-gateway-service-build-process.html) | Docker build, step-by-step, with a Java/Spring Boot comparison for anyone coming from a JVM background |
-| [Deployment architecture (HTML)](../hrb_chatbot_service/docs/dev-reference/hrb_chatbot_v3/deployment-and-ops/build-and-deploy/02b-hrb-api-gateway-service-deployment-architecture.html) | Same content as the `.drawio` above, narrative form |
-| [`service-boundary-decision.html`](../hrb_chatbot_service/docs/dev-reference/hrb_chatbot_v3/architecture/service-boundary-decision.html) | Why this service exists as its own repo, not folded into the backend |
-| [`platform-overview.html`](../hrb_chatbot_service/docs/dev-reference/hrb_chatbot_v3/architecture/platform-overview.html) | The cross-service hub - business capabilities, all 7 repos, one diagram |
+| [Overview / Spec / Architecture / Design / Decisions](../docs/platform-and-admin/api-gateway-service/) | The full HTML doc set for this service |
+| [Build process](../docs/deployment-and-ops/build-and-deploy/02a-hrb-api-gateway-service-build-process.html) | Docker build, step-by-step, with a Java/Spring Boot comparison for anyone coming from a JVM background |
+| [Deployment architecture (HTML)](../docs/deployment-and-ops/build-and-deploy/02b-hrb-api-gateway-service-deployment-architecture.html) | Same content as the `.drawio` above, narrative form |
+| [`service-boundary-decision.html`](../docs/architecture/service-boundary-decision.html) | Why this service exists as its own repo, not folded into the backend |
+| [`platform-overview.html`](../docs/architecture/platform-overview.html) | The cross-service hub - business capabilities, all 7 repos, one diagram |
 
 Older paths under `docs/dev-reference/api-gateway-service/` (no `hrb_chatbot_v3/` prefix) referenced in earlier commits are stale - that folder was reorganized 2026-10-23, and the links above reflect the real current location.
