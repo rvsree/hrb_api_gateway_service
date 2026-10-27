@@ -31,6 +31,38 @@ Tests: `pytest tests/ -v` (from the repo root; `pytest.ini` sets `pythonpath = s
 
 ## Tech stack
 
+```mermaid
+flowchart TD
+    HUB((hrb_api_gateway_service))
+    HUB --> FW[Framework]
+    HUB --> FWD[Forwarding]
+    HUB --> RL[Rate Limiting]
+    HUB --> SC[Shared Code]
+    HUB --> DEP[Deployment]
+
+    FW --> FW1[FastAPI]
+    FW --> FW2[Uvicorn]
+    FWD --> F1[httpx.AsyncClient]
+    RL --> R1[Redis]
+    RL --> R2[Fixed-Window INCR+EXPIRE]
+    SC --> S1[hrb_common_libs]
+    DEP --> D1[AWS App Runner]
+    DEP --> D2[Docker]
+
+    classDef hub fill:#4C1D95,color:#fff,stroke:#2E1065,stroke-width:2px
+    classDef fw fill:#1D4ED8,color:#fff,stroke:#1E3A8A
+    classDef fwd fill:#047857,color:#fff,stroke:#064E3B
+    classDef rl fill:#B45309,color:#fff,stroke:#78350F
+    classDef sc fill:#BE185D,color:#fff,stroke:#831843
+    classDef dep fill:#475569,color:#fff,stroke:#1E293B
+    class HUB hub
+    class FW,FW1,FW2 fw
+    class FWD,F1 fwd
+    class RL,R1,R2 rl
+    class SC,S1 sc
+    class DEP,D1,D2 dep
+```
+
 | Layer | What's actually used |
 |---|---|
 | Framework | FastAPI + Uvicorn |
