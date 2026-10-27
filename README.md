@@ -7,10 +7,17 @@ The single public entry point for the HRB chatbot system - CORS, rate-limiting, 
 Written for someone picking this up cold - a new engineer, a reviewer, or (the actual reason this doc exists) a Forward Deployed Engineer walking into an unfamiliar codebase and needing to get productive fast, not just read about it.
 
 1. Run it locally (below) and hit `GET /ping` - confirms the process is actually up before you read another line.
-2. [Current state architecture](../docs/architecture/diagrams/api-gateway-current-state-architecture.drawio) - the real request flow, including the RBAC gap, in one picture.
-3. [Deployment architecture](../docs/architecture/diagrams/api-gateway-deployment-architecture.drawio) - the real AWS resources this runs on.
+2. [Current state architecture](../docs/architecture/diagrams/api-gateway-current-state-architecture.drawio) - the request flow, including the RBAC gap, in one picture.
+3. [Deployment architecture](../docs/architecture/diagrams/api-gateway-deployment-architecture.drawio) - the AWS resources this runs on.
 4. [Target state (scaling)](../docs/architecture/diagrams/api-gateway-target-state-scaling-architecture.drawio) - what changes as usage grows from 100 to 5,000 employees, and why.
 5. Section 5 below - the one correction worth knowing before you trust anything else this repo's docs say about security.
+
+## Live demo
+
+This Gateway fronts **[hrb-chatbot-ui.rvsree.dev](https://hrb-chatbot-ui.rvsree.dev)**
+- every chat/leave-balance/HITL request from that UI passes through here
+first. Pauses by default for cost control; a slow first response means it's
+resuming, not broken.
 
 ## Quick start
 
@@ -34,7 +41,7 @@ Tests: `pytest tests/ -v` (from the repo root; `pytest.ini` sets `pythonpath = s
 
 ## Status, 2026-10-23: live in production
 
-Deployed to AWS App Runner (`https://necxf9n7mv.us-east-1.awsapprunner.com`), and `hrb_chatbot_ui` is cut over to call it instead of the backend directly - confirmed with a real CORS preflight and a real forwarded `genai-rag-retrieval` query. CORS, rate-limiting (Redis-backed, shared across replicas), and contract validation are all real and built. See `ROADMAP.md` for phase history - one real bug found and fixed along the way: the forwarder's client timeout (30s) was too short for a real `~60s` agentic query and tripped its own circuit breaker on genuinely-slow-not-failed backend calls, now `90s`.
+Deployed to AWS App Runner (`https://necxf9n7mv.us-east-1.awsapprunner.com`), and `hrb_chatbot_ui` is cut over to call it instead of the backend directly - verified with a live CORS preflight and a forwarded `genai-rag-retrieval` query that returned a correct answer. CORS, rate-limiting (Redis-backed, shared across replicas), and contract validation are all built and working in production. See `ROADMAP.md` for phase history - one bug surfaced and got fixed along the way: the forwarder's client timeout (30s) was too short for a genuine `~60s` agentic query and tripped its own circuit breaker on calls that were slow, not failed - now `90s`.
 
 ## 5. Correction, 2026-10-24: RBAC is not actually enforced here
 
@@ -50,4 +57,4 @@ This README previously claimed `api/gateway/rbac.py`'s own RBAC role was "absorb
 | [`service-boundary-decision.html`](../docs/architecture/service-boundary-decision.html) | Why this service exists as its own repo, not folded into the backend |
 | [`platform-overview.html`](../docs/architecture/platform-overview.html) | The cross-service hub - business capabilities, all 7 repos, one diagram |
 
-Older paths under `docs/dev-reference/api-gateway-service/` (no `hrb_chatbot_v3/` prefix) referenced in earlier commits are stale - that folder was reorganized 2026-10-23, and the links above reflect the real current location.
+Older paths under `docs/dev-reference/api-gateway-service/` (no `hrb_chatbot_v3/` prefix) referenced in earlier commits are stale - that folder was reorganized 2026-10-23, and the links above reflect the current location.
